@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Utils.TelemetryUtil;
 
 import java.util.Arrays;
@@ -56,6 +57,9 @@ public class TankDrive extends Subsystem {
 
         public double leftPower;
         public double rightPower;
+
+        public double leftVel;
+        public double rightVel;
     }
 
     public TankDrive(HardwareMap map) {
@@ -191,6 +195,8 @@ public class TankDrive extends Subsystem {
 
         telemetryData.leftPower = powers[0];
         telemetryData.rightPower = powers[1];
+        telemetryData.leftPower = motors[0].getVelocity(AngleUnit.RADIANS);
+        telemetryData.rightPower = motors[1].getVelocity(AngleUnit.RADIANS);
 
         return TelemetryUtil.objectToMap(telemetryData);
     }
