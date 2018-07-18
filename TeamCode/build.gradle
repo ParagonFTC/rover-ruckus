@@ -11,5 +11,11 @@
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 dependencies {
-    compile project(':FtcDashboard')
+    implementation project(':FtcDashboard')
+}
+android {
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }

@@ -8,9 +8,15 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataCommand;
 import com.qualcomm.hardware.lynx.commands.core.LynxGetBulkInputDataResponse;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import org.firstinspires.ftc.teamcode.Utils.TelemetryUtil;
+
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -21,14 +27,13 @@ public class TankDrive extends Subsystem {
 
     public enum Mode {
         OPEN_LOOP,
-        FOLLOW_PATH,
     }
 
     public static final String[] MOTOR_NAMES = {"tankLeft","tankRight"};
 
     public static final double RADIUS = 1.9685;
 
-    private DcMotor[] motors;
+    private DcMotorEx[] motors;
 
     private int[] driveEncoderOffsets;
     private boolean useCachedDriveEncoderPositions;
@@ -37,6 +42,10 @@ public class TankDrive extends Subsystem {
     private BNO055IMU imu;
 
     private Mode mode = Mode.OPEN_LOOP;
+
+    private double[] powers;
+    private double targetOmega = 0;
+    private double targetX = 0;
 
     private LynxModule Hub1;
 
@@ -54,14 +63,23 @@ public class TankDrive extends Subsystem {
 
         Hub1 = map.get(LynxModule.class, "Hub1");
 
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+        imu = map.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+
+        powers = new double[2];
         driveEncoderOffsets = new int[4];
+        motors = new DcMotorEx[2];
         for (int i = 0; i<2; i++) {
-            motors[i] = map.get(DcMotor.class, MOTOR_NAMES[i]);
+            DcMotorEx dcMotorEx = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
+            motors[i] = new CachingDcMotorEx(dcMotorEx);
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         motors[1].setDirection(DcMotorSimple.Direction.REVERSE);
 
+        resetDriveEncoders();
     }
 
     public DcMotor[] getMotors() {
@@ -72,6 +90,34 @@ public class TankDrive extends Subsystem {
         this.mode = mode;
     }
 
+    private Mode getMode() {
+        return mode;
+    }
+
+    public void setVelocity(double x, double omega) {
+        internalSetVelocity(x, omega);
+        mode = Mode.OPEN_LOOP;
+    }
+
+    private void internalSetVelocity(double x, double omega) {
+        this.targetX = x;
+        this.targetOmega = omega;
+    }
+
+    private void updatePowers() {
+        powers[0] = targetX + targetOmega;
+        powers[1] = targetX - targetOmega;
+
+        double max = Collections.max(Arrays.asList(1.0,Math.abs(powers[0]),Math.abs(powers[1])));
+
+        for (int i = 0; i < 2; i ++) {
+            powers[i] /= max;
+        }
+    }
+
+    public void stop() {
+        setVelocity(0,0);
+    }
     private void resetDriveEncoders() {
         int[] positions = internalGetDriveEncoderPositions();
         for (int i = 0; i < 2; i ++){
@@ -126,11 +172,26 @@ public class TankDrive extends Subsystem {
         useCachedDriveEncoderPositions = false;
     }
 
-    public Map<String, Object> update(Canvas fieldOverlay) {
+    public void setVelocityPIDCoefficients(PIDCoefficients pidCoefficients) {
+        for (int i = 0; i < 2; i ++) {
+            motors[i].setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidCoefficients);
+        }
+    }
+
+    public Map<String,Object> update(Canvas fieldOverlay) {
         invalidateCaches();
 
         telemetryData.driveMode = mode;
 
-        
+        updatePowers();
+
+        for (int i = 0; i < 2; i ++) {
+            motors[i].setPower(powers[i]);
+        }
+
+        telemetryData.leftPower = powers[0];
+        telemetryData.rightPower = powers[1];
+
+        return TelemetryUtil.objectToMap(telemetryData);
     }
 }
