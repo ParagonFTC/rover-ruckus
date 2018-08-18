@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import android.app.Activity;
 import android.util.Log;
 
-import com.acmerobotics.dashboard.RobotDashboard;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
@@ -27,7 +27,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
         void onPostUpdate();
     }
 
-    public RobotDashboard dashboard;
+    public FtcDashboard dashboard;
 
     //subsystems
     public TankDrive drive;
@@ -104,7 +104,7 @@ public class Robot implements OpModeManagerNotifier.Notifications, GlobalWarning
     };
 
     public Robot(OpMode opMode) {
-        dashboard = RobotDashboard.getInstance();
+        dashboard = FtcDashboard.getInstance();
 
         listeners = new ArrayList<>();
 

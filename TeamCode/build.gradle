@@ -10,12 +10,14 @@
 // Custom definitions may go here
 // Include common definitions from above.
 apply from: '../build.common.gradle'
-dependencies {
-    implementation project(':FtcDashboard')
-}
+
 android {
     compileOptions {
         targetCompatibility 1.8
         sourceCompatibility 1.8
     }
+}
+
+dependencies {
+    implementation 'com.acmerobotics.roadrunner:core:0.1.0'
 }
