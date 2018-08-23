@@ -1,9 +1,7 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package com.paragonftc.ftc.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
 
 public class CachingDcMotor implements DcMotor {

@@ -1,6 +1,5 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package com.paragonftc.ftc.hardware;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 

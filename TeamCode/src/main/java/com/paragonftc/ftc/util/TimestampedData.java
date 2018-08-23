@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Utils;
+package com.paragonftc.ftc.util;
 
 public class TimestampedData<T> {
     public final T data;
