@@ -8,9 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.Subsystems.Robot;
 import org.firstinspires.ftc.teamcode.Subsystems.TankDrive;
 
-@Autonomous
-public class TankDriveCalibrationOpMode extends TrackWidthCalibrationOpMode {
 
+public class TankDriveCalibrationOpMode /*extends TrackWidthCalibrationOpMode*/ {
+/*
     @Override
     protected Drive initdrive() {
 
@@ -19,5 +19,5 @@ public class TankDriveCalibrationOpMode extends TrackWidthCalibrationOpMode {
     @Override
     protected BNO055IMU initIMU() {
         return null;
-    }
+    }*/
 }
