@@ -20,7 +20,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
-public abstract class Robot implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
+public class RobotOld implements OpModeManagerNotifier.Notifications, GlobalWarningSource {
     public static final String TAG = "Robot";
 
     public interface Listener {
@@ -30,6 +30,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
     public FtcDashboard dashboard;
 
     //subsystems
+    public TankDrive drive;
 
     private List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
@@ -38,7 +39,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
     private ExecutorService subsystemUpdateExecutor, telemetryUpdateExecutor;
     private BlockingQueue<TelemetryPacket> telemetryPacketQueue;
 
-    private List<Robot.Listener> listeners;
+    private List<Listener> listeners;
 
     private Boolean started;
 
@@ -66,7 +67,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
                         }
                     }
                 }
-                for (Robot.Listener listener : listeners) {
+                for (Listener listener : listeners) {
                     listener.onPostUpdate();
                 }
                 while (telemetryPacketQueue.remainingCapacity() == 0) {
@@ -102,12 +103,19 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
         }
     };
 
-    public Robot(OpMode opMode) {
+    public RobotOld(OpMode opMode) {
         dashboard = FtcDashboard.getInstance();
 
         listeners = new ArrayList<>();
 
         subsystems = new ArrayList<>();
+
+        try {
+            drive = new TankDrive(opMode.hardwareMap);
+            subsystems.add(drive);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, "skipping TankDrive");
+        }
 
         Activity activity = (Activity) opMode.hardwareMap.appContext;
         opModeManager =OpModeManagerImpl.getOpModeManagerOfActivity(activity);
@@ -125,7 +133,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
         cycleLatches = new ArrayList<>();
     }
 
-    public void addListener(Robot.Listener listener) {
+    public void addListener(Listener listener) {
         listeners.add(listener);
     }
 

@@ -4,20 +4,20 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.ConfigConstants;
-import org.firstinspires.ftc.teamcode.Subsystems.Robot;
+import org.firstinspires.ftc.teamcode.Subsystems.RobotOld;
 
 @TeleOp(name = "TeleOp", group = "TeleOp")
 public class TestTeleOp extends OpMode{
     private StickyGamepad stickyGamepad1, stickyGamepad2;
 
-    private Robot robot;
+    private RobotOld robotOld;
 
     private Boolean slowMode, superSlowMode;
 
     @Override
     public void init() {
-        robot = new Robot(this);
-        robot.start();
+        robotOld = new RobotOld(this);
+        robotOld.start();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);
@@ -36,17 +36,17 @@ public class TestTeleOp extends OpMode{
             slowMode = !slowMode;
             superSlowMode = false;
             if (slowMode) {
-                robot.drive.setVelocityPIDCoefficients(ConfigConstants.SLOW_VELOCITY_PID);
+                robotOld.drive.setVelocityPIDCoefficients(ConfigConstants.SLOW_VELOCITY_PID);
             } else {
-                robot.drive.setVelocityPIDCoefficients(ConfigConstants.NORMAL_VELOCITY_PID);
+                robotOld.drive.setVelocityPIDCoefficients(ConfigConstants.NORMAL_VELOCITY_PID);
             }
         } else if (stickyGamepad1.left_bumper) {
             superSlowMode = !superSlowMode;
             slowMode = false;
             if (superSlowMode) {
-                robot.drive.setVelocityPIDCoefficients(ConfigConstants.SLOW_VELOCITY_PID);
+                robotOld.drive.setVelocityPIDCoefficients(ConfigConstants.SLOW_VELOCITY_PID);
             } else {
-                robot.drive.setVelocityPIDCoefficients(ConfigConstants.NORMAL_VELOCITY_PID);
+                robotOld.drive.setVelocityPIDCoefficients(ConfigConstants.NORMAL_VELOCITY_PID);
             }
         }
 
@@ -64,6 +64,6 @@ public class TestTeleOp extends OpMode{
             omega *= 0.5;
         }
 
-        robot.drive.setVelocity(x, omega);
+        robotOld.drive.setVelocity(x, omega);
     }
 }
