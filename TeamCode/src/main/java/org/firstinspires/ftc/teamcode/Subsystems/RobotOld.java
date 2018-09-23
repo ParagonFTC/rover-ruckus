@@ -204,8 +204,8 @@ public class RobotOld implements OpModeManagerNotifier.Notifications, GlobalWarn
     }
 
     @Override
-    public boolean setGlobalWarning(String warning) {
-        return false;
+    public void setGlobalWarning(String warning) {
+
     }
 
     @Override

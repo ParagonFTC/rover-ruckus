@@ -1,7 +1,9 @@
 package com.paragonftc.ftc.hardware;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -29,8 +31,18 @@ public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
     }
 
     @Override
+    public void setVelocity(double angularRate) {
+        delegate.setVelocity(angularRate);
+    }
+
+    @Override
     public void setVelocity(double angularRate, AngleUnit unit) {
         delegate.setVelocity(angularRate, unit);
+    }
+
+    @Override
+    public double getVelocity() {
+        return delegate.getVelocity();
     }
 
     @Override
@@ -44,8 +56,28 @@ public class CachingDcMotorEx extends CachingDcMotor implements DcMotorEx {
     }
 
     @Override
+    public void setPIDFCoefficients(RunMode mode, PIDFCoefficients pidfCoefficients) throws UnsupportedOperationException {
+        delegate.setPIDFCoefficients(mode, pidfCoefficients);
+    }
+
+    @Override
+    public void setVelocityPIDFCoefficients(double p, double i, double d, double f) {
+        delegate.setVelocityPIDFCoefficients(p, i, d, f);
+    }
+
+    @Override
+    public void setPositionPIDFCoefficients(double p) {
+
+    }
+
+    @Override
     public PIDCoefficients getPIDCoefficients(RunMode mode) {
         return delegate.getPIDCoefficients(mode);
+    }
+
+    @Override
+    public PIDFCoefficients getPIDFCoefficients(RunMode mode) {
+        return delegate.getPIDFCoefficients(mode);
     }
 
     @Override

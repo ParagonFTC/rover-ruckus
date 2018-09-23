@@ -31,7 +31,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
 
     //subsystems
 
-    private List<Subsystem> subsystems;
+    protected List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
     private List<CountDownLatch> cycleLatches;
     private OpModeManagerImpl opModeManager;
@@ -109,6 +109,8 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
 
         subsystems = new ArrayList<>();
 
+        addSubsystems(opMode);
+
         Activity activity = (Activity) opMode.hardwareMap.appContext;
         opModeManager =OpModeManagerImpl.getOpModeManagerOfActivity(activity);
         if (opModeManager != null) {
@@ -124,6 +126,8 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
 
         cycleLatches = new ArrayList<>();
     }
+
+    protected abstract void addSubsystems(OpMode opMode);
 
     public void addListener(Robot.Listener listener) {
         listeners.add(listener);
@@ -196,8 +200,8 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
     }
 
     @Override
-    public boolean setGlobalWarning(String warning) {
-        return false;
+    public void setGlobalWarning(String warning) {
+
     }
 
     @Override

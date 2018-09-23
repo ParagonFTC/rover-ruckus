@@ -44,7 +44,7 @@ public class TankDrive extends Subsystem {
 
     private DcMotorEx[] leftMotors;
     private DcMotorEx[] rightMotors;
-    public double ticksPerRev = leftMotors[0].getMotorType().getTicksPerRev();
+    public double ticksPerRev;
 
     private int[] driveEncoderOffsets;
     private boolean useCachedDriveEncoderPositions;
@@ -60,7 +60,7 @@ public class TankDrive extends Subsystem {
 
     private LynxModule Hub1;
 
-    public TankDriveUtil tankDriveUtil = new TankDriveUtil(TRACK_WIDTH, leftMotors, rightMotors, RADIUS, ticksPerRev, GEAR_RATIO);
+    public TankDriveUtil tankDriveUtil;
 
     private TelemetryData telemetryData;
 
@@ -84,8 +84,8 @@ public class TankDrive extends Subsystem {
         imu = map.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
-        powers = new double[2];
-        driveEncoderOffsets = new int[4];
+        powers = new double[LEFT_MOTOR_NUMBER + RIGHT_MOTOR_NUMBER];
+        driveEncoderOffsets = new int[LEFT_MOTOR_NUMBER + RIGHT_MOTOR_NUMBER];
         leftMotors = new DcMotorEx[LEFT_MOTOR_NUMBER];
         for (int i = 0; i < LEFT_MOTOR_NUMBER; i ++) {
             DcMotorEx dcMotorEx = map.get(DcMotorEx.class, LEFT_MOTOR_NAMES[i]);
@@ -102,6 +102,8 @@ public class TankDrive extends Subsystem {
             rightMotors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightMotors[i].setDirection(DcMotorSimple.Direction.FORWARD);
         }
+        ticksPerRev = leftMotors[0].getMotorType().getTicksPerRev();
+        tankDriveUtil = new TankDriveUtil(TRACK_WIDTH, leftMotors, rightMotors, RADIUS, ticksPerRev, GEAR_RATIO);
 
         resetDriveEncoders();
     }

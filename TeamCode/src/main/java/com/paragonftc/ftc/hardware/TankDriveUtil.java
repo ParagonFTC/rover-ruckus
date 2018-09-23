@@ -33,7 +33,7 @@ public class TankDriveUtil extends TankDrive {
     }
 
     private double encoderTicksToInches(int ticks) {
-        return this.radius * 2 * Math.PI * this.gearRatio * ticks / this.ticksPerRev;
+        return radius * 2 * Math.PI * gearRatio * ticks / ticksPerRev;
     }
 
     @NotNull

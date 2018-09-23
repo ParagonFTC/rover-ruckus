@@ -50,7 +50,7 @@ public class TestTeleOp extends OpMode{
             }
         }
 
-        double x = 0, omega;
+        double x, omega;
 
         x = gamepad1.left_stick_y;
 
