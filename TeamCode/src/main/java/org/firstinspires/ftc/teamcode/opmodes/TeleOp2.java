@@ -4,30 +4,30 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Subsystems.LanderLatcher;
-import org.firstinspires.ftc.teamcode.Subsystems.MecanumDriveBase;
+import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
 
-@TeleOp(name = "TeleOp", group = "teleop")
-public class TeleOp1 extends OpMode {
+@TeleOp(name = "TeleOp2", group = "teleop")
+public class TeleOp2 extends OpMode {
     private StickyGamepad stickyGamepad1;
 
-    private MecanumDriveBase mecanumDriveBase;
-    private LanderLatcher landerLatcher;
+    private FirstRobot robot;
 
     private boolean slowMode;
+
     @Override
     public void init() {
-        mecanumDriveBase = new MecanumDriveBase(hardwareMap);
-        landerLatcher = new LanderLatcher(hardwareMap);
+        robot = new FirstRobot(this);
+        robot.start();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
+
+        telemetry.setMsTransmissionInterval(50);
+        telemetry.addLine("Ready");
     }
 
     @Override
     public void loop() {
         stickyGamepad1.update();
-        mecanumDriveBase.update();
-        landerLatcher.update();
 
         //drive
         if (stickyGamepad1.a) {
@@ -54,14 +54,14 @@ public class TeleOp1 extends OpMode {
             y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
 
-        mecanumDriveBase.setVelocity(new Pose2d(x, y, omega));
+        robot.drive.setVelocity(new Pose2d(x, y, omega));
 
         if (gamepad1.dpad_up) {
-            landerLatcher.setWinchPower(1);
+            robot.latch.setWinchPower(1);
         } else if (gamepad1.dpad_down) {
-            landerLatcher.setWinchPower(-1);
+            robot.latch.setWinchPower(-1);
         } else {
-            landerLatcher.setWinchPower(0);
+            robot.latch.setWinchPower(0);
         }
     }
 }
