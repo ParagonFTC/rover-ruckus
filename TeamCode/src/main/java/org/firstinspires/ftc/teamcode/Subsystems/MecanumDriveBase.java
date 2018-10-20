@@ -1,14 +1,24 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.control.PIDCoefficients;
+import com.acmerobotics.roadrunner.drive.MecanumDrive;
+import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.paragonftc.ftc.hardware.CachingDcMotorEx;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.motors.NeveRest40Gearmotor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class MecanumDriveBase extends Subsystem {
     public enum Mode {
@@ -16,11 +26,7 @@ public class MecanumDriveBase extends Subsystem {
         FOLLOW_PATH
     }
 
-    public static final String[] MOTOR_NAMES = {"frontLeft", "rearLeft", "rearRight", "frontRight"};
-
-    public static final double RADIUS = 1.96850394;
-
-    private DcMotorEx[] motors;
+    public MecanumDriveTrain mecanumDriveTrain;
 
     private Mode mode = Mode.OPEN_LOOP;
 
@@ -29,15 +35,8 @@ public class MecanumDriveBase extends Subsystem {
 
     public MecanumDriveBase (HardwareMap map) {
         powers = new double[4];
-        motors = new DcMotorEx[4];
-        for (int i = 0; i < 4; i ++) {
-            DcMotorEx dcMotorEx = map.get(DcMotorEx.class, MOTOR_NAMES[i]);
-            motors[i] = new CachingDcMotorEx(dcMotorEx);
-            motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            motors[i].setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-        motors[2].setDirection(DcMotorSimple.Direction.REVERSE);
-        motors[3].setDirection(DcMotorSimple.Direction.REVERSE);
+
+        mecanumDriveTrain = new MecanumDriveTrain(map);
     }
 
     public void setVelocity (Pose2d vel) {
@@ -46,28 +45,16 @@ public class MecanumDriveBase extends Subsystem {
     }
 
     private void updatePowers() {
-        powers[0] = targetVel.getX() - targetVel.getY() - targetVel.getHeading();
-        powers[1] = targetVel.getX() + targetVel.getY() - targetVel.getHeading();
-        powers[2] = targetVel.getX() - targetVel.getY() + targetVel.getHeading();
-        powers[3] = targetVel.getX() + targetVel.getY() + targetVel.getHeading();
-
-        double max = Collections.max(Arrays.asList(1.0, Math.abs(powers[0]),
-                Math.abs(powers[1]), Math.abs(powers[2]), Math.abs(powers[3])));
-
-        for (int i = 0; i < 4; i++) {
-            powers[i] /= max;
-        }
+        mecanumDriveTrain.setVelocity(targetVel);
     }
 
     public void stop() {
         setVelocity(new Pose2d(0, 0, 0));
     }
+
     @Override
     public void update() {
         updatePowers();
-
-        for (int i = 0; i < 4; i ++) {
-            motors[i].setPower(powers[i]);
-        }
+        mecanumDriveTrain.update();
     }
 }
