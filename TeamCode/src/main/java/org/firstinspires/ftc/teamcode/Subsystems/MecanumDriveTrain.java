@@ -101,8 +101,8 @@ public class MecanumDriveTrain extends MecanumDrive {
         rightRear.setPower(v2);
         rightFront.setPower(v3);
     }
-
     public double getExternalHeading() {
         return imu.getAngularOrientation().firstAngle;
     }
+
 }
