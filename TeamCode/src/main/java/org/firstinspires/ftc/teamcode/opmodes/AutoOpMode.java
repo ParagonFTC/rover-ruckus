@@ -31,8 +31,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         detector.useDefaults();
 
-        robot.latch.lock();
-
         setup();
 
         waitForStart();
@@ -57,10 +55,11 @@ public abstract class AutoOpMode extends LinearOpMode {
     protected void sample() {
         detector.enable();
         robot.sleep(1);
-        robot.drive.setVelocity(new Pose2d(0,0.5,0));
-        while (!detector.getAligned() && opModeIsActive()) {
+        robot.drive.setVelocity(new Pose2d(0,0.3,0));
+        while (!detector.getAligned() && !isStopRequested()) {
             idle();
         }
+        robot.drive.stop();
         detector.disable();
         robot.drive.setVelocity(new Pose2d(0.5,0,0));
         robot.sleep(1);
