@@ -3,9 +3,13 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.paragonftc.ftc.hardware.CachingDcMotor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class LanderLatcher extends Subsystem {
+    public static final double LOCK_POSITION = 0.1;
+    public static final double UNLOCK_POSITION = 0.6;
     private DcMotor winchMotor;
+    private Servo lock;
 
     public enum LatchMode {
         PID,
@@ -18,11 +22,24 @@ public class LanderLatcher extends Subsystem {
 
     public LanderLatcher (HardwareMap map) {
         winchMotor = new CachingDcMotor(map.dcMotor.get("winchMotor"));
+        lock = map.get(Servo.class, "lock");
     }
 
     public void setWinchPower(double power) {
         winchPower = power;
         latchMode = LatchMode.MANUAL;
+    }
+
+    public void setLockPosition (double position) {
+        lock.setPosition(position);
+    }
+
+    public void lock() {
+        setLockPosition(LOCK_POSITION);
+    }
+
+    public void unlock() {
+        setLockPosition(UNLOCK_POSITION);
     }
     @Override
     public void update() {
