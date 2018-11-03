@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.acmerobotics.roadrunner.trajectory.constraints.MecanumConstraints;
 import com.paragonftc.ftc.hardware.CachingDcMotorEx;
+import com.paragonftc.ftc.util.PIDController;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.motors.NeveRest40Gearmotor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -31,7 +32,7 @@ public class MecanumDriveTrain extends MecanumDrive {
 
     public static double WHEEL_RADIUS = 1.9685039;
     public static double GEAR_RATIO = 1;
-    public static double TRACK_WIDTH = 1;
+    public static double TRACK_WIDTH = 8.97;
 
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(20.0, 30.0, Math.PI / 2, Math.PI / 2);
 
@@ -79,36 +80,15 @@ public class MecanumDriveTrain extends MecanumDrive {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
 
-    public TrajectoryBuilder trajectoryBuilder() {
-        return new TrajectoryBuilder(getPoseEstimate(), constraints);
-    }
-
-    public void followTrajectory(Trajectory trajectory) {
-        follower.followTrajectory(trajectory);
-    }
-
     public void updateFollower() {
         follower.update(getPoseEstimate());
-    }
-
-    public void update() {
-        updatePoseEstimate();
-        updateFollower();
-    }
-
-    public boolean isFollowingTrajectory() {
-        return follower.isFollowing();
-    }
-
-    public BNO055IMU getImu() {
-        return imu;
     }
 
     @NotNull
     @Override
     public List<Double> getWheelPositions() {
         List<Double> wheelPositions = new ArrayList<>();
-        for (int i = 1; i < 4; i ++) {
+        for (int i = 0; i < 4; i ++) {
             wheelPositions.add(encoderTicksToInches(motors.get(i).getCurrentPosition()));
         }
         return wheelPositions;
@@ -120,5 +100,9 @@ public class MecanumDriveTrain extends MecanumDrive {
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+    }
+
+    public double getExternalHeading() {
+        return imu.getAngularOrientation().firstAngle;
     }
 }

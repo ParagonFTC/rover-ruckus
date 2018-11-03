@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -62,6 +63,12 @@ public class TeleOp2 extends OpMode {
             robot.latch.setWinchPower(-1);
         } else {
             robot.latch.setWinchPower(0);
+        }
+
+        if (gamepad1.x && gamepad1.y) {
+            robot.latch.lock();
+        } else if (gamepad1.x && !gamepad1.y) {
+            robot.latch.unlock();
         }
     }
 }

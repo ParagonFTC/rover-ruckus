@@ -1,32 +1,27 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
-import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
-import com.paragonftc.ftc.hardware.CachingDcMotorEx;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.motors.NeveRest40Gearmotor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.acmerobotics.roadrunner.util.Angle;
+import com.paragonftc.ftc.util.PIDController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
+@Config
 public class MecanumDriveBase extends Subsystem {
+    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0,0,0);
+
     public enum Mode {
         OPEN_LOOP,
         FOLLOW_PATH
     }
 
     public MecanumDriveTrain mecanumDriveTrain;
+
+    private double headingOffset;
+    private double headingErrorAllowance = Math.toRadians(5);
+    private PIDController maintainHeadingController;
+    private boolean maintainHeading;
 
     private Mode mode = Mode.OPEN_LOOP;
 
@@ -37,11 +32,40 @@ public class MecanumDriveBase extends Subsystem {
         powers = new double[4];
 
         mecanumDriveTrain = new MecanumDriveTrain(map);
+
+        maintainHeadingController = new PIDController(MAINTAIN_HEADING_PID);
+        maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
+    }
+
+    public void enableHeadingCorrection(double desiredHeading) {
+        maintainHeading = true;
+        this.maintainHeadingController.setSetpoint(desiredHeading);
+        this.maintainHeadingController.reset();
+    }
+
+    public void disableHeadingCorrection() {
+        maintainHeading = false;
+    }
+
+    public void setTargetHeading(double heading) {
+        this.maintainHeadingController.setSetpoint(heading);
+    }
+
+    public void setHeading(double heading) {
+        headingOffset = -mecanumDriveTrain.getExternalHeading() + heading;
     }
 
     public void setVelocity (Pose2d vel) {
-        this.targetVel = vel;
+        internalSetVelocity(vel);
         mode = Mode.OPEN_LOOP;
+    }
+
+    private void internalSetVelocity (Pose2d vel) {
+        this.targetVel = vel;
+    }
+
+    public double getHeading() {
+        return Angle.norm(mecanumDriveTrain.getExternalHeading() + headingOffset);
     }
 
     private void updatePowers() {
@@ -54,7 +78,18 @@ public class MecanumDriveBase extends Subsystem {
 
     @Override
     public void update() {
+        if (maintainHeading) {
+            double heading = mecanumDriveTrain.getExternalHeading();
+            double headingError = maintainHeadingController.getError(heading);
+            double headingUpdate = maintainHeadingController.update(headingError);
+            internalSetVelocity(new Pose2d(targetVel.getX(), targetVel.getY(), headingUpdate));
+            if (Math.abs(headingError) <= headingErrorAllowance) {
+                maintainHeading = false;
+            }
+        } else {
+            internalSetVelocity(targetVel);
+        }
+
         updatePowers();
-        mecanumDriveTrain.update();
     }
 }
