@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
+import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
 import com.disnodeteam.dogecv.detectors.roverrukus.SamplingOrderDetector;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -15,7 +17,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     protected FirstRobot robot;
 
-    protected SamplingOrderDetector detector;
+    protected GoldAlignDetector detector;
 
     protected abstract void setup();
     protected abstract void run();
@@ -24,33 +26,44 @@ public abstract class AutoOpMode extends LinearOpMode {
     public final void runOpMode() throws InterruptedException {
         robot = new FirstRobot(this);
         robot.start();
-/*
-        detector = new SamplingOrderDetector();
+
+        detector = new GoldAlignDetector();
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
         detector.useDefaults();
 
-        detector.downscale = 0.4;
-        detector.areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA;
-        detector.maxAreaScorer.weight = 0.001;
-        detector.ratioScorer.weight = 15;
-        detector.ratioScorer.perfectRatio = 1.0;
-        detector.enable();
-*/
         robot.latch.lock();
 
         setup();
 
         waitForStart();
-
+        robot.drive.setHeading(0);
         run();
     }
 
     protected void land() {
         robot.latch.setWinchPower(1);
-        robot.sleep(0.2);
+        robot.sleep(0.08);
         robot.latch.unlock();
-        robot.latch.setWinchPower(-0.5);
-        robot.sleep(1.5);
+        robot.sleep(0.2);
+        robot.latch.setWinchPower(-0.3);
+        robot.sleep(1.25);
         robot.latch.setWinchPower(0);
+        robot.drive.enableHeadingCorrection(Math.PI / 2);
+        while (robot.drive.isMaintainHeading() && opModeIsActive()) {
+            idle();
+        }
+    }
+
+    protected void sample() {
+        detector.enable();
+        robot.sleep(1);
+        robot.drive.setVelocity(new Pose2d(0,0.5,0));
+        while (!detector.getAligned() && opModeIsActive()) {
+            idle();
+        }
+        detector.disable();
+        robot.drive.setVelocity(new Pose2d(0.5,0,0));
+        robot.sleep(1);
+        robot.drive.stop();
     }
 }

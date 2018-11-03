@@ -23,4 +23,10 @@ public class GoldAlignTest extends OpMode {
         telemetry.addData("IsAligned", detector.getAligned());
         telemetry.addData("X Pos", detector.getXPosition());
     }
+
+    @Override
+    public void stop() {
+        // Disable the detector
+        detector.disable();
+    }
 }

@@ -28,8 +28,9 @@ public class HeadingPIDTest extends OpMode {
         if (gamepad1.a) {
             robot.drive.enableHeadingCorrection(Math.toRadians(targetHeading));
         }
-        dashboardTelemetry.addData("Target Heading", targetHeading);
+        dashboardTelemetry.addData("Target Heading", robot.drive.getHeadingSetpoint());
         dashboardTelemetry.addData("Current Heading", robot.drive.getHeading());
+        dashboardTelemetry.addData("Heading Error", robot.drive.getHeadingError());
         dashboardTelemetry.update();
     }
 }

@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 @Config
 public class MecanumDriveBase extends Subsystem {
-    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(0,0,0);
+    public static PIDCoefficients MAINTAIN_HEADING_PID = new PIDCoefficients(-0.1,0,0);
 
     public enum Mode {
         OPEN_LOOP,
@@ -19,7 +19,8 @@ public class MecanumDriveBase extends Subsystem {
     public MecanumDriveTrain mecanumDriveTrain;
 
     private double headingOffset;
-    private double headingErrorAllowance = Math.toRadians(5);
+    private double headingError;
+    private double headingErrorAllowance = 3;
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
 
@@ -68,6 +69,18 @@ public class MecanumDriveBase extends Subsystem {
         return Angle.norm(mecanumDriveTrain.getExternalHeading() + headingOffset);
     }
 
+    public double getHeadingError() {
+        return headingError;
+    }
+
+    public double getHeadingSetpoint() {
+        return maintainHeadingController.getSetpoint();
+    }
+
+    public boolean isMaintainHeading() {
+        return  maintainHeading;
+    }
+
     private void updatePowers() {
         mecanumDriveTrain.setVelocity(targetVel);
     }
@@ -79,12 +92,13 @@ public class MecanumDriveBase extends Subsystem {
     @Override
     public void update() {
         if (maintainHeading) {
-            double heading = mecanumDriveTrain.getExternalHeading();
-            double headingError = maintainHeadingController.getError(heading);
+            double heading = getHeading();
+            headingError = maintainHeadingController.getError(heading);
             double headingUpdate = maintainHeadingController.update(headingError);
             internalSetVelocity(new Pose2d(targetVel.getX(), targetVel.getY(), headingUpdate));
-            if (Math.abs(headingError) <= headingErrorAllowance) {
-                maintainHeading = false;
+            if (Math.abs(headingError) <= Math.toRadians(headingErrorAllowance)) {
+                disableHeadingCorrection();
+                internalSetVelocity(new Pose2d(targetVel.getX(), targetVel.getY(), 0));
             }
         } else {
             internalSetVelocity(targetVel);
