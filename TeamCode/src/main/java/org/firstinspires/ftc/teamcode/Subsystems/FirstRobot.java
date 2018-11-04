@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class FirstRobot extends Robot {
     public MecanumDriveBase drive;
     public LanderLatcher latch;
+    public DepotClaimer depot;
     public FirstRobot(OpMode opMode) {
         super(opMode);
     }
@@ -24,6 +25,13 @@ public class FirstRobot extends Robot {
         try {
             latch = new LanderLatcher(hardwareMap);
             subsystems.add(latch);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, " skipping Latcher");
+        }
+
+        try {
+            depot = new DepotClaimer(hardwareMap);
+            subsystems.add(depot);
         } catch (IllegalArgumentException e) {
             Log.w(TAG, " skipping Latcher");
         }
