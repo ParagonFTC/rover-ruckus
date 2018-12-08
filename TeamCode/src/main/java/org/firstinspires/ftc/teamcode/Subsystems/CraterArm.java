@@ -6,15 +6,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @Config
-public class DepotClaimer extends Subsystem {
+public class CraterArm extends Subsystem {
     public static double ARM_UP_POSITION = 0.3;
-    public static double ARM_DOWN_POSITION = 0.9;
+    public static double ARM_DOWN_POSITION = 0.6;
 
     private double armPosition;
-    private Servo markerArm;
+    private Servo craterArm;
 
-    public DepotClaimer (HardwareMap map) {
-        markerArm = new CachingServo(map.servo.get("markerArm"));
+    public CraterArm (HardwareMap map) {
+        craterArm = new CachingServo(map.servo.get("craterArm"));
     }
 
     public void raise() {
@@ -25,12 +25,11 @@ public class DepotClaimer extends Subsystem {
         setArmPosition(ARM_DOWN_POSITION);
     }
 
-    public void setArmPosition(double position) {
+    private void setArmPosition(double position) {
         armPosition = position;
     }
-
     @Override
     public void update() {
-        markerArm.setPosition(armPosition);
+        craterArm.setPosition(armPosition);
     }
 }

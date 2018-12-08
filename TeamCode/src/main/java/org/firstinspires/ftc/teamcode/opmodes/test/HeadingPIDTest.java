@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
 
 @Config
-@TeleOp
+@TeleOp(name = "HeadingPID")
 public class HeadingPIDTest extends OpMode {
     private FirstRobot robot;
     FtcDashboard dashboard;

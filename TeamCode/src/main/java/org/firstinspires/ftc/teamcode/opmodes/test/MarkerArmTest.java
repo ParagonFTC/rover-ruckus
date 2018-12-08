@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.Subsystems.DepotClaimer;
 import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
 
-@TeleOp
+@TeleOp(name = "MarkerArm")
 public class MarkerArmTest extends OpMode {
     private FirstRobot robot;
 

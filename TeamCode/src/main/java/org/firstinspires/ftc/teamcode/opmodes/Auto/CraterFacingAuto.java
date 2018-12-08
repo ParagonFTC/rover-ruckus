@@ -11,6 +11,7 @@ public class CraterFacingAuto extends AutoOpMode {
     protected void setup() {
         robot.latch.lock();
         robot.depot.raise();
+        robot.crater.raise();
     }
 
     @Override
@@ -24,10 +25,14 @@ public class CraterFacingAuto extends AutoOpMode {
         }
         robot.drive.setVelocity(new Pose2d(0,-0.5,0));
         robot.sleep(1.5);
-        robot.drive.setHeading(3*Math.PI/4);
+        robot.drive.stop();
+        robot.drive.setHeading(-3*Math.PI/4);
+        robot.drive.enableHeadingCorrection();
         robot.drive.setVelocity(new Pose2d(0,0.3,0));
         robot.sleep(0.5);
         robot.drive.stop();
+        robot.drive.setVelocity(new Pose2d(0.5,0,0));
+        robot.sleep(0.5);
         claim();
         park();
     }
