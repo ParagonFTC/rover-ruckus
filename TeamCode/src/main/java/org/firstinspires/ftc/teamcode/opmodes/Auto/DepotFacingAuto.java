@@ -13,6 +13,7 @@ public class DepotFacingAuto extends AutoOpMode {
         robot.latch.lock();
         robot.depot.lower();
         robot.depot.raise();
+        robot.crater.raise();
     }
 
     @Override
@@ -26,11 +27,13 @@ public class DepotFacingAuto extends AutoOpMode {
         }
         robot.drive.setVelocity(new Pose2d(0,0.5,0));
         robot.sleep(1.5);
+        robot.drive.stop();
         robot.drive.setHeading(Math.PI/4);
+        robot.drive.enableHeadingCorrection();
         robot.drive.setVelocity(new Pose2d(0,-0.3,0));
         robot.sleep(0.5);
         robot.drive.stop();
         claim();
-        //park();
+        park();
     }
 }

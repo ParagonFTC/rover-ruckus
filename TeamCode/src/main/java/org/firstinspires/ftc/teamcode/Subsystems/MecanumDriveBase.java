@@ -23,6 +23,7 @@ public class MecanumDriveBase extends Subsystem {
     private double headingErrorAllowance = 3;
     private PIDController maintainHeadingController;
     private boolean maintainHeading;
+    private boolean isMaintainHeading;
 
     private Mode mode = Mode.OPEN_LOOP;
 
@@ -38,8 +39,13 @@ public class MecanumDriveBase extends Subsystem {
         maintainHeadingController.setInputBounds(-Math.PI, Math.PI);
     }
 
+    public void enableHeadingCorrection() {
+        enableHeadingCorrection(getHeading());
+    }
+
     public void enableHeadingCorrection(double desiredHeading) {
         maintainHeading = true;
+        isMaintainHeading = true;
         this.maintainHeadingController.setSetpoint(desiredHeading);
         this.maintainHeadingController.reset();
     }
@@ -78,7 +84,7 @@ public class MecanumDriveBase extends Subsystem {
     }
 
     public boolean isMaintainHeading() {
-        return  maintainHeading;
+        return  isMaintainHeading;
     }
 
     private void updatePowers() {
@@ -97,8 +103,7 @@ public class MecanumDriveBase extends Subsystem {
             double headingUpdate = maintainHeadingController.update(headingError);
             internalSetVelocity(new Pose2d(targetVel.getX(), targetVel.getY(), headingUpdate));
             if (Math.abs(headingError) <= Math.toRadians(headingErrorAllowance)) {
-                disableHeadingCorrection();
-                internalSetVelocity(new Pose2d(targetVel.getX(), targetVel.getY(), 0));
+                isMaintainHeading = false;
             }
         } else {
             internalSetVelocity(targetVel);

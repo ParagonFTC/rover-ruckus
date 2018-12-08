@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,6 +18,8 @@ public class TeleOp2 extends OpMode {
     public void init() {
         robot = new FirstRobot(this);
         robot.start();
+        robot.depot.raise();
+        robot.crater.raise();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
 
@@ -69,6 +70,16 @@ public class TeleOp2 extends OpMode {
             robot.latch.lock();
         } else if (gamepad1.x && !gamepad1.y) {
             robot.latch.unlock();
+        }
+        robot.arm.setIntakePower(0.5 * gamepad2.left_stick_y);
+        robot.arm.setJointPower(0.5 * gamepad2.right_stick_y);
+
+        if (gamepad2.dpad_up) {
+            robot.arm.setExtensionPower(1);
+        } else if (gamepad2.dpad_down) {
+            robot.arm.setExtensionPower(-1);
+        } else {
+            robot.arm.setExtensionPower(0);
         }
     }
 }

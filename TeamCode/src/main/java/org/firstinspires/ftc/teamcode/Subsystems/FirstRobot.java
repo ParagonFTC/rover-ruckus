@@ -9,6 +9,9 @@ public class FirstRobot extends Robot {
     public MecanumDriveBase drive;
     public LanderLatcher latch;
     public DepotClaimer depot;
+    public CraterArm crater;
+    public ScoringArm arm;
+
     public FirstRobot(OpMode opMode) {
         super(opMode);
     }
@@ -33,7 +36,21 @@ public class FirstRobot extends Robot {
             depot = new DepotClaimer(hardwareMap);
             subsystems.add(depot);
         } catch (IllegalArgumentException e) {
-            Log.w(TAG, " skipping Latcher");
+            Log.w(TAG, " skipping Marker");
+        }
+
+        try {
+            crater = new CraterArm(hardwareMap);
+            subsystems.add(crater);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, " skipping Crater");
+        }
+
+        try {
+            arm = new ScoringArm(hardwareMap);
+            subsystems.add(arm);
+        } catch (IllegalArgumentException e) {
+            Log.w(TAG, " skipping Scoring Arm");
         }
     }
 }
