@@ -72,7 +72,7 @@ public class TeleOp2 extends OpMode {
             robot.latch.unlock();
         }
         robot.arm.setIntakePower(0.5 * gamepad2.left_stick_y);
-        robot.arm.setJointPower(0.5 * gamepad2.right_stick_y);
+        robot.arm.setJointPower(gamepad2.right_stick_y);
 
         if (gamepad2.dpad_up) {
             robot.arm.setExtensionPower(1);
