@@ -258,6 +258,8 @@ public class FtcRobotControllerActivity extends Activity
     context = this;
     utility = new Utility(this);
 
+    Thread.setDefaultUncaughtExceptionHandler(new DefaultExceptionHandler(this, context));
+
     DeviceNameManagerFactory.getInstance().start(deviceNameStartResult);
 
     PreferenceRemoterRC.getInstance().start(prefRemoterStartResult);

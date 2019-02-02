@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.util.NanoClock;
 import com.disnodeteam.dogecv.CameraViewDisplay;
 import com.disnodeteam.dogecv.DogeCV;
 import com.disnodeteam.dogecv.detectors.roverrukus.GoldAlignDetector;
+import com.paragonftc.ftc.util.AutoTransitioner;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -43,6 +44,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
         setup();
 
+        AutoTransitioner.transitionOnStop(this, "TeleOp2");
         waitForStart();
         robot.drive.setHeading(0);
         run();
@@ -53,23 +55,26 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     protected void land() {
-        robot.latch.setWinchPower(1);
+        robot.latch.setWinchPower(-1);
+        robot.arm.setJointPosition(Math.PI / 4);
         robot.sleep(0.08);
+        robot.arm.setExtensionPower(0);
         robot.latch.unlock();
         robot.sleep(0.2);
-        robot.latch.setWinchPower(-0.3);
+        robot.latch.setWinchPower(0.3);
         robot.sleep(1.15);
         robot.latch.setWinchPower(0);
         robot.drive.enableHeadingCorrection(Math.PI / 2);
         while (robot.drive.isMaintainHeading() && opModeIsActive()) {
             idle();
         }
+        robot.drive.disableHeadingCorrection();
     }
 
     protected void sample() {
         detector.enable();
         robot.sleep(1);
-        robot.drive.setVelocity(new Pose2d(0,0.3,0));
+        robot.drive.setVelocity(new Pose2d(-0.02,0.3,0));
         double startTimeStamp = clock.seconds();
         while (!detector.getAligned() && !isStopRequested() && clock.seconds() - startTimeStamp < 7) {
             telemetry.addData("Gold X position", detector.getXPosition());
@@ -93,7 +98,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.drive.stop();
         dashboardTelemetry.addData("Delta T", deltaT);
         dashboardTelemetry.update();
-        robot.drive.setVelocity(new Pose2d(0,0.3,0));
+        robot.drive.setVelocity(new Pose2d(-0.02,0.3,0));
         robot.sleep(7 - deltaT);
         robot.drive.stop();
     }
@@ -107,15 +112,16 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     protected void park() {
+        robot.drive.disableHeadingCorrection();
         robot.drive.setVelocity(new Pose2d(-1,0,0));
         robot.sleep(2.5);
         robot.drive.stop();
-        robot.crater.lower();
+        robot.arm.setJointPosition(Math.PI / 2);
     }
 
     protected void claim() {
         robot.drive.setVelocity(new Pose2d(0.5,0,0));
-        robot.sleep(3.5);
+        robot.sleep(3);
         robot.drive.stop();
         robot.depot.lower();
         robot.sleep(0.5);
