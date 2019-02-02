@@ -5,10 +5,11 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
+import org.firstinspires.ftc.teamcode.Subsystems.ScoringArm;
 
 @TeleOp(name = "TeleOp2", group = "teleop")
 public class TeleOp2 extends OpMode {
-    private StickyGamepad stickyGamepad1;
+    private StickyGamepad stickyGamepad1, stickyGamepad2;
 
     private FirstRobot robot;
 
@@ -19,9 +20,9 @@ public class TeleOp2 extends OpMode {
         robot = new FirstRobot(this);
         robot.start();
         robot.depot.raise();
-        robot.crater.raise();
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
+        stickyGamepad2 = new StickyGamepad(gamepad2);
 
         telemetry.setMsTransmissionInterval(50);
         telemetry.addLine("Ready");
@@ -30,6 +31,8 @@ public class TeleOp2 extends OpMode {
     @Override
     public void loop() {
         stickyGamepad1.update();
+        stickyGamepad2.update();
+        telemetry.update();
 
         //drive
         if (stickyGamepad1.a) {
@@ -71,9 +74,8 @@ public class TeleOp2 extends OpMode {
         } else if (gamepad1.x && !gamepad1.y) {
             robot.latch.unlock();
         }
-        robot.arm.setIntakePower(0.5 * gamepad2.left_stick_y);
+        robot.arm.setIntakePower(-0.5 * gamepad2.left_stick_y);
         robot.arm.setJointPower(gamepad2.right_stick_y);
-
         if (gamepad2.dpad_up) {
             robot.arm.setExtensionPower(1);
         } else if (gamepad2.dpad_down) {
@@ -81,5 +83,22 @@ public class TeleOp2 extends OpMode {
         } else {
             robot.arm.setExtensionPower(0);
         }
+        if (gamepad1.left_bumper || gamepad2.left_stick_y > 0) {
+            robot.arm.enableHold();
+        } else if (gamepad1.right_bumper || gamepad2.right_stick_y != 0) {
+            robot.arm.disableHold();
+        }
+        if (stickyGamepad2.x) {
+            robot.arm.setReferencePosition();
+        }
+        if (stickyGamepad2.a) {
+            robot.arm.setJointPosition(ScoringArm.jointPosition.DOWN);
+        } else if (stickyGamepad2.y) {
+            robot.arm.setJointPosition(ScoringArm.jointPosition.UP);
+        }
+        telemetry.addData("Arm Position", robot.arm.getArmPosition());
+        telemetry.addData("Reference Position", robot.arm.getReferencePosition());
+        telemetry.addData("Target Position", robot.arm.getTargetPosition());
+        telemetry.addData("Mode", robot.arm.getMode());
     }
 }

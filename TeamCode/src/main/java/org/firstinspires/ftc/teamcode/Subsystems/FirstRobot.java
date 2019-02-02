@@ -40,13 +40,6 @@ public class FirstRobot extends Robot {
         }
 
         try {
-            crater = new CraterArm(hardwareMap);
-            subsystems.add(crater);
-        } catch (IllegalArgumentException e) {
-            Log.w(TAG, " skipping Crater");
-        }
-
-        try {
             arm = new ScoringArm(hardwareMap);
             subsystems.add(arm);
         } catch (IllegalArgumentException e) {
