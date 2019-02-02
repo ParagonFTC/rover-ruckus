@@ -3,20 +3,17 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import android.app.Activity;
 import android.util.Log;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.GlobalWarningSource;
+import com.qualcomm.robotcore.util.RobotLog;
 import com.qualcomm.robotcore.util.ThreadPool;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeManagerImpl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -27,37 +24,30 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
         void onPostUpdate();
     }
 
-    public FtcDashboard dashboard;
-
-    //subsystems
-
-    private List<Subsystem> subsystems;
+    protected List<Subsystem> subsystems;
     private List<Subsystem> subsystemsWithProblems;
     private List<CountDownLatch> cycleLatches;
     private OpModeManagerImpl opModeManager;
-    private ExecutorService subsystemUpdateExecutor, telemetryUpdateExecutor;
-    private BlockingQueue<TelemetryPacket> telemetryPacketQueue;
+    private ExecutorService subsystemUpdateExecutor;
 
-    private List<Robot.Listener> listeners;
+    private List<Listener> listeners;
 
-    private Boolean started;
+    private boolean started;
 
-    private Runnable systemUpdateRunnable = () -> {
+    private Runnable subsystemUpdateRunnable = () -> {
         while (!Thread.currentThread().isInterrupted()) {
-            TelemetryPacket telemetryPacket = new TelemetryPacket();
             try {
                 for (Subsystem subsystem : subsystems) {
                     if (subsystem == null) continue;
                     try {
-                        Map<String, Object> telemetry = subsystem.update(telemetryPacket.fieldOverlay());
-                        telemetryPacket.putAll(telemetry);
+                        subsystem.update();
                         synchronized (subsystemsWithProblems) {
                             if (subsystemsWithProblems.contains(subsystem)) {
                                 subsystemsWithProblems.remove(subsystem);
                             }
                         }
                     } catch (Throwable t) {
-                        Log.w(TAG, "Subsystem update failed for" + subsystem.getClass().getSimpleName() + ": " + t.getMessage());
+                        Log.w(TAG, "Subsystem update failed for " + subsystem.getClass().getSimpleName() + ": " + t.getMessage());
                         Log.w(TAG, t);
                         synchronized (subsystemsWithProblems) {
                             if (!subsystemsWithProblems.contains(subsystem)) {
@@ -66,13 +56,9 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
                         }
                     }
                 }
-                for (Robot.Listener listener : listeners) {
+                for (Listener listener : listeners) {
                     listener.onPostUpdate();
                 }
-                while (telemetryPacketQueue.remainingCapacity() == 0) {
-                    Thread.sleep(1);
-                }
-                telemetryPacketQueue.add(telemetryPacket);
                 synchronized (cycleLatches) {
                     int i = 0;
                     while (i < cycleLatches.size()) {
@@ -91,48 +77,36 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
         }
     };
 
-    private Runnable telemetryUpdateRunnable = () -> {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                TelemetryPacket packet = telemetryPacketQueue.take();
-                dashboard.sendTelemetryPacket(packet);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    };
-
     public Robot(OpMode opMode) {
-        dashboard = FtcDashboard.getInstance();
-
         listeners = new ArrayList<>();
 
         subsystems = new ArrayList<>();
 
+        initHardware(opMode.hardwareMap);
+
         Activity activity = (Activity) opMode.hardwareMap.appContext;
-        opModeManager =OpModeManagerImpl.getOpModeManagerOfActivity(activity);
+        opModeManager = OpModeManagerImpl.getOpModeManagerOfActivity(activity);
         if (opModeManager != null) {
             opModeManager.registerListener(this);
         }
 
         subsystemUpdateExecutor = ThreadPool.newSingleThreadExecutor("subsystem update");
-        telemetryUpdateExecutor = ThreadPool.newSingleThreadExecutor("telemetry update");
-
-        telemetryPacketQueue = new ArrayBlockingQueue<>(10);
 
         subsystemsWithProblems = new ArrayList<>();
+        RobotLog.registerGlobalWarningSource(this);
 
         cycleLatches = new ArrayList<>();
     }
 
-    public void addListener(Robot.Listener listener) {
+    protected abstract void initHardware(HardwareMap hardwareMap);
+
+    public void addListener(Listener listener) {
         listeners.add(listener);
     }
 
     public void start() {
         if (!started) {
-            subsystemUpdateExecutor.submit(systemUpdateRunnable);
-            telemetryUpdateExecutor.submit(telemetryUpdateRunnable);
+            subsystemUpdateExecutor.submit(subsystemUpdateRunnable);
             started = true;
         }
     }
@@ -143,10 +117,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
             subsystemUpdateExecutor = null;
         }
 
-        if (telemetryUpdateExecutor != null) {
-            telemetryUpdateExecutor.shutdownNow();
-            telemetryUpdateExecutor = null;
-        }
+        RobotLog.unregisterGlobalWarningSource(this);
     }
 
     public void waitForNextCycle() {
@@ -160,6 +131,19 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
             Thread.currentThread().interrupt();
         }
     }
+
+    public void waitOneFullCycle() {
+        CountDownLatch latch = new CountDownLatch(2);
+        synchronized (cycleLatches) {
+            cycleLatches.add(latch);
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     @Override
     public void onOpModePreInit(OpMode opMode) {
 
@@ -187,7 +171,7 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
                 warnings.add("Problem with " + subsystem.getClass().getSimpleName());
             }
         }
-        return null;
+        return RobotLog.combineGlobalWarnings(warnings);
     }
 
     @Override
@@ -196,8 +180,8 @@ public abstract class Robot implements OpModeManagerNotifier.Notifications, Glob
     }
 
     @Override
-    public boolean setGlobalWarning(String warning) {
-        return false;
+    public void setGlobalWarning(String warning) {
+
     }
 
     @Override

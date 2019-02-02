@@ -19,6 +19,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.acmerobotics.roadrunner:core:0.1.1'
-    implementation project(':openCVLibrary343')
+    implementation project(':DogeCV')
+    implementation project(':openCVLibrary3')
 }

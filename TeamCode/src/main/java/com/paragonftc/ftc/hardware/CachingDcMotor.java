@@ -2,7 +2,7 @@ package com.paragonftc.ftc.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.configuration.MotorConfigurationType;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 public class CachingDcMotor implements DcMotor {
     private DcMotor delegate;
