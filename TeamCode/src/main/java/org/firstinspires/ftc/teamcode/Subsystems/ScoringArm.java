@@ -9,11 +9,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
-import org.opencv.core.Mat;
-
-import java.util.HashMap;
-import java.util.Map;
-
 @Config
 public class ScoringArm extends Subsystem {
     private static final double TICKS_PER_REV = 28 * 256;
@@ -24,56 +19,65 @@ public class ScoringArm extends Subsystem {
     private Servo holder;
 
     public static double LOCK_POSITION = 0.1;
-    public static double UNLOCK_POSITION = 0.6;
+    public static double UNLOCK_POSITION = 0.45;
 
     public static double JOINT_POWER = 0.7;
 
     private double jointPower, extensionPower, intakePower;
     private double servoPosition;
-    private jointPosition currentPosition;
     private double referencePosition;
     private int targetPosition;
+    private int extensionPosition;
     private boolean active = false;
+
+    public static double JOINT_INIT_POSITION = 3 * Math.PI / 4;
+    public static double JOINT_DUMP_POSITION = 3 * Math.PI / 4;
+    public static double JOINT_MID_POSITION = Math.PI / 2;
+    public static double JOINT_CRATER_POSITION = Math.PI / 3;
+    public static double JOINT_INTAKE_POSITION = 0;
+
+    public static double EXTENSION_DUMP_POSITION = 30.0;
+    public static double EXTENSION_CRATER_POSITION = 12.0;
+    public static double EXTENSION_INIT_POSITION = 0.0;
 
     public enum Mode {
         OPEN_LOOP,
         RUN_TO_POSITION
     }
 
-    public enum jointPosition {
-        INIT,
-        DUMP,
-        MID,
-        CRATER,
-        INTAKE,
-        CUSTOM
+    public static final int INIT = 4, DUMP = 3, MID = 2, CRATER = 1, INTAKE = 0, CUSTOM = 5;
+
+    private int currentPosition = INIT;
+    private int nextPosition = INIT;
+
+    class ArmState {
+        private double jointPosition, extensionPosition, servoPosition;
+        public ArmState (double jointPosition, double extensionPosition, double servoPosition) {
+            this.jointPosition = jointPosition;
+            this.extensionPosition = extensionPosition;
+            this.servoPosition = servoPosition;
+        }
+
+        public double getJointPosition() {
+            return jointPosition;
+        }
+
+        public double getExtensionPosition() {
+            return extensionPosition;
+        }
+
+        public double getServoPosition() {
+            return servoPosition;
+        }
     }
 
-    private static final Map<jointPosition, jointPosition> RAISE_EVENT_MAP = new HashMap<>();
-    private static final Map<jointPosition, jointPosition> LOWER_EVENT_MAP = new HashMap<>();
-    private static final Map<jointPosition, Double> JOINT_POSITION_MAP = new HashMap<>();
-    private static final Map<jointPosition, Double> EXTENSION_POSITION_MAP = new HashMap<>();
-
-    static {
-        RAISE_EVENT_MAP.put(jointPosition.INIT, jointPosition.INIT);
-        RAISE_EVENT_MAP.put(jointPosition.DUMP, jointPosition.INIT);
-        RAISE_EVENT_MAP.put(jointPosition.MID, jointPosition.DUMP);
-        RAISE_EVENT_MAP.put(jointPosition.CRATER, jointPosition.MID);
-        RAISE_EVENT_MAP.put(jointPosition.INTAKE, jointPosition.CRATER);
-        LOWER_EVENT_MAP.put(jointPosition.INIT, jointPosition.DUMP);
-        LOWER_EVENT_MAP.put(jointPosition.DUMP,jointPosition.MID);
-        LOWER_EVENT_MAP.put(jointPosition.MID, jointPosition.CRATER);
-        LOWER_EVENT_MAP.put(jointPosition.CRATER, jointPosition.INTAKE);
-        LOWER_EVENT_MAP.put(jointPosition.INTAKE, jointPosition.INTAKE);
-        JOINT_POSITION_MAP.put(jointPosition.INTAKE, 0.0);
-        JOINT_POSITION_MAP.put(jointPosition.CRATER, Math.PI/4);
-        JOINT_POSITION_MAP.put(jointPosition.MID, Math.PI/2);
-        JOINT_POSITION_MAP.put(jointPosition.DUMP, 3 * Math.PI / 4);
-        EXTENSION_POSITION_MAP.put(jointPosition.CRATER, 12.0);
-        EXTENSION_POSITION_MAP.put(jointPosition.MID, 0.0);
-        EXTENSION_POSITION_MAP.put(jointPosition.DUMP, 30.0);
-        EXTENSION_POSITION_MAP.put(jointPosition.INIT, 0.0);
-    }
+    ArmState[] armStates = {
+            new ArmState(JOINT_INTAKE_POSITION, EXTENSION_CRATER_POSITION, UNLOCK_POSITION),
+            new ArmState(JOINT_CRATER_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
+            new ArmState(JOINT_MID_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
+            new ArmState(JOINT_DUMP_POSITION, EXTENSION_DUMP_POSITION, LOCK_POSITION),
+            new ArmState(JOINT_INIT_POSITION, EXTENSION_INIT_POSITION, LOCK_POSITION)
+    };
 
     private Mode mode = Mode.OPEN_LOOP;
 
@@ -114,7 +118,10 @@ public class ScoringArm extends Subsystem {
     }
 
     public void setIntakePower(double intakePower) {
-        this.intakePower = intakePower;
+        if (currentPosition == INTAKE || currentPosition == DUMP) {
+            this.intakePower = intakePower;
+            disableHold();
+        }
     }
 
     private static double encoderTickstoRadians(int ticks) {
@@ -137,23 +144,33 @@ public class ScoringArm extends Subsystem {
         return encoderTickstoRadians(joint.getCurrentPosition());
     }
 
-    public void setJointPosition(jointPosition position) {
+    public void setJointPosition(int position) {
         currentPosition = position;
+        targetPosition = radiansToEncoderTicks(referencePosition + armStates[position].getJointPosition());
+        extensionPosition = extensionInchestoTicks(armStates[position].getExtensionPosition());
+        //TODO: make update() method work
         mode = Mode.RUN_TO_POSITION;
-    }
-
-    public void setJointPosition(double radians) {
-        targetPosition = radiansToEncoderTicks(referencePosition + radians);
-        mode = Mode.RUN_TO_POSITION;
-        currentPosition = jointPosition.CUSTOM;
     }
 
     public void raiseArm() {
-        setJointPosition(RAISE_EVENT_MAP.get(currentPosition));
+        enableHold();
+        nextPosition = currentPosition + 1;
+        if (nextPosition >= CUSTOM) {
+            nextPosition = currentPosition;
+        } else {
+            setJointPosition(nextPosition);
+            currentPosition = nextPosition;
+        }
     }
 
     public void lowerArm() {
-        setJointPosition(LOWER_EVENT_MAP.get(currentPosition));
+        nextPosition = currentPosition - 1;
+        if (nextPosition < INIT) {
+            nextPosition = currentPosition;
+        } else {
+            setJointPosition(nextPosition);
+            currentPosition = nextPosition;
+        }
     }
 
     public void setReferencePosition() {
@@ -178,14 +195,14 @@ public class ScoringArm extends Subsystem {
 
     @Override
     public void update() {
+
         if (mode == Mode.RUN_TO_POSITION) {
             if (!active) {
-                targetPosition = radiansToEncoderTicks(JOINT_POSITION_MAP.get(currentPosition) + referencePosition);
                 joint.setTargetPosition(targetPosition);
+                extension.setTargetPosition(extensionPosition);
             } else if (!joint.isBusy()) {
                 active = false;
                 mode = Mode.OPEN_LOOP;
-                internalSetJointPower(0);
             }
             if (!(joint.getMode() == DcMotor.RunMode.RUN_TO_POSITION)) {
                 joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -194,24 +211,9 @@ public class ScoringArm extends Subsystem {
         } else if (!(joint.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)){
             joint.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+
         joint.setPower(jointPower);
-        if (currentPosition == jointPosition.INTAKE) {
-            disableHold();
-            extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            double currentExtension = extensionTickstoInches(extension.getCurrentPosition());
-            if (currentExtension > EXTENSION_POSITION_MAP.get(jointPosition.CRATER)) {
-                extension.setPower(extensionPower);
-            }
-        } else if (currentPosition == jointPosition.DUMP) {
-            //what do I do here?????
-        } else {
-            enableHold();
-            extension.setTargetPosition(extensionInchestoTicks(EXTENSION_POSITION_MAP.get(currentPosition)));
-            if (extension.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
-                extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            }
-            extension.setPower(1.0);
-        }
+        extension.setPower(extensionPower);
         intake.setPower(intakePower);
         holder.setPosition(servoPosition);
     }

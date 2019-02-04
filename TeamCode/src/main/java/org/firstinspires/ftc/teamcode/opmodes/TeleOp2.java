@@ -88,6 +88,7 @@ public class TeleOp2 extends OpMode {
         } else if (gamepad1.right_bumper || gamepad2.right_stick_y != 0) {
             robot.arm.disableHold();
         }
+
         if (stickyGamepad2.x) {
             robot.arm.setReferencePosition();
         }

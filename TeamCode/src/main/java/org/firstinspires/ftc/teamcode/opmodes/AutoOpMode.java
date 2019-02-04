@@ -56,7 +56,7 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     protected void land() {
         robot.latch.setWinchPower(-1);
-        robot.arm.setJointPosition(Math.PI / 4);
+        //robot.arm.setJointPosition(Math.PI / 4);
         robot.sleep(0.08);
         robot.arm.setExtensionPower(0);
         robot.latch.unlock();
@@ -116,7 +116,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.drive.setVelocity(new Pose2d(-1,0,0));
         robot.sleep(2.5);
         robot.drive.stop();
-        robot.arm.setJointPosition(Math.PI / 2);
+        //robot.arm.setJointPosition(Math.PI / 2);
     }
 
     protected void claim() {
