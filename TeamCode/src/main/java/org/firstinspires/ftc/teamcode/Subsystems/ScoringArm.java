@@ -33,7 +33,7 @@ public class ScoringArm extends Subsystem {
     public static double JOINT_INIT_POSITION = 3 * Math.PI / 4;
     public static double JOINT_DUMP_POSITION = 3 * Math.PI / 4;
     public static double JOINT_MID_POSITION = Math.PI / 2;
-    public static double JOINT_CRATER_POSITION = Math.PI / 3;
+    public static double JOINT_CRATER_POSITION = 0.4;
     public static double JOINT_INTAKE_POSITION = 0;
 
     public static double EXTENSION_DUMP_POSITION = 30.0;
@@ -47,8 +47,8 @@ public class ScoringArm extends Subsystem {
 
     public static final int INIT = 4, DUMP = 3, MID = 2, CRATER = 1, INTAKE = 0, CUSTOM = 5;
 
-    private int currentPosition = INIT;
-    private int nextPosition = INIT;
+    private int currentPosition = INTAKE;
+    private int nextPosition = INTAKE;
 
     class ArmState {
         private double jointPosition, extensionPosition, servoPosition;
@@ -119,9 +119,9 @@ public class ScoringArm extends Subsystem {
 
     public void setIntakePower(double intakePower) {
         if (currentPosition == INTAKE || currentPosition == DUMP) {
-            this.intakePower = intakePower;
             disableHold();
         }
+        this.intakePower = intakePower;
     }
 
     private static double encoderTickstoRadians(int ticks) {
@@ -146,7 +146,7 @@ public class ScoringArm extends Subsystem {
 
     public void setJointPosition(int position) {
         currentPosition = position;
-        targetPosition = radiansToEncoderTicks(referencePosition + armStates[position].getJointPosition());
+        targetPosition = radiansToEncoderTicks(referencePosition - armStates[position].getJointPosition());
         extensionPosition = extensionInchestoTicks(armStates[position].getExtensionPosition());
         //TODO: make update() method work
         mode = Mode.RUN_TO_POSITION;
@@ -165,7 +165,7 @@ public class ScoringArm extends Subsystem {
 
     public void lowerArm() {
         nextPosition = currentPosition - 1;
-        if (nextPosition < INIT) {
+        if (nextPosition < INTAKE) {
             nextPosition = currentPosition;
         } else {
             setJointPosition(nextPosition);
@@ -193,6 +193,10 @@ public class ScoringArm extends Subsystem {
         return mode;
     }
 
+    public int getState() {
+        return currentPosition;
+    }
+
     @Override
     public void update() {
 
@@ -208,6 +212,7 @@ public class ScoringArm extends Subsystem {
                 joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             internalSetJointPower(JOINT_POWER);
+            //extensionPower = 0.7;
         } else if (!(joint.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)){
             joint.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }

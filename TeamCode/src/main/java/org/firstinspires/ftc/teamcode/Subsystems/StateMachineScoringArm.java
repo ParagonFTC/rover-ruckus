@@ -179,7 +179,7 @@ public class StateMachineScoringArm extends Subsystem {
 
         }
     }
-
+/*
     private State[] armStates = {INIT, DUMP, MID, CRATER, INTAKE};
 
     private StateTransition[] raiseTransitions, lowerTransitions;
@@ -223,7 +223,7 @@ public class StateMachineScoringArm extends Subsystem {
         for (int i = 0; i < lowerTransitions.length; i ++) {
             armStateMachine.addTransition(lowerTransitions[i]);
         }
-    }
+    } */
     private static double jointTickstoRadians(int ticks) {
         return 2 * Math.PI * 0.5 * ticks / JOINT_TICKS_PER_REV;
     }
@@ -266,7 +266,7 @@ public class StateMachineScoringArm extends Subsystem {
             servoPosition = UNLOCK_POSITION;
         }
     }
-
+/*
     public void raiseArm() {
         if (stateMachineEnabled) {
             armStateMachine.consumeEvent(RAISE);
@@ -278,11 +278,11 @@ public class StateMachineScoringArm extends Subsystem {
             armStateMachine.consumeEvent(LOWER);
         }
     }
-
+ */
     public double getJointPosition() {
         return jointTickstoRadians(joint.getCurrentPosition());
     }
-
+/*
     public void setReferencePosition() {
         if (!stateMachineEnabled) {
             stateMachineEnabled = true;
@@ -292,7 +292,7 @@ public class StateMachineScoringArm extends Subsystem {
         }
         referencePosition = getJointPosition();
     }
-
+*/
     private void internalSetIntakePower(double intakePower) {
         this.intakePower = intakePower;
     }

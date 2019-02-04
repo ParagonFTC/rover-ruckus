@@ -15,11 +15,12 @@ public class ScoringArmTest extends OpMode {
 
     @Override
     public void init() {
-        arm = new StateMachineScoringArm(hardwareMap);
+        //arm = new StateMachineScoringArm(hardwareMap);
     }
 
     @Override
     public void loop() {
+        /*
         arm.update();
         arm.setIntakePower(-gamepad2.left_stick_y);
         arm.setJointPower(gamepad2.right_stick_y);
@@ -39,5 +40,6 @@ public class ScoringArmTest extends OpMode {
         if (gamepad2.x) {
             arm.setReferencePosition();
         }
+        */
     }
 }

@@ -101,5 +101,6 @@ public class TeleOp2 extends OpMode {
         telemetry.addData("Reference Position", robot.arm.getReferencePosition());
         telemetry.addData("Target Position", robot.arm.getTargetPosition());
         telemetry.addData("Mode", robot.arm.getMode());
+        telemetry.addData("State", robot.arm.getState());
     }
 }
