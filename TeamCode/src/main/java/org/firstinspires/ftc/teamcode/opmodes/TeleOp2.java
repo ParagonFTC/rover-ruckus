@@ -55,6 +55,10 @@ public class TeleOp2 extends OpMode {
             omega *= 0.5;
         }
 
+        if (robot.arm.getState() == ScoringArm.INTAKE) {
+            omega *= 0.2;
+        }
+
         if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0) {
             y = (gamepad1.left_trigger - gamepad1.right_trigger) / 4.0;
         }
@@ -74,7 +78,7 @@ public class TeleOp2 extends OpMode {
         } else if (gamepad1.x && !gamepad1.y) {
             robot.latch.unlock();
         }
-        robot.arm.setIntakePower(-0.5 * gamepad2.left_stick_y);
+        robot.arm.setIntakePower(-0.8 * gamepad2.left_stick_y);
         robot.arm.setJointPower(gamepad2.right_stick_y);
         if (gamepad2.dpad_up) {
             robot.arm.setExtensionPower(1);
@@ -83,9 +87,8 @@ public class TeleOp2 extends OpMode {
         } else {
             robot.arm.setExtensionPower(0);
         }
-        if (gamepad1.left_bumper || gamepad2.left_stick_y > 0) {
-            robot.arm.enableHold();
-        } else if (gamepad1.right_bumper || gamepad2.right_stick_y != 0) {
+
+        if (gamepad2.right_stick_y > 0) {
             robot.arm.disableHold();
         }
 
@@ -97,7 +100,7 @@ public class TeleOp2 extends OpMode {
         } else if (stickyGamepad2.y) {
             robot.arm.raiseArm();
         }
-        telemetry.addData("Arm Position", robot.arm.getArmPosition());
+        telemetry.addData("Arm Position", robot.arm.getArmPosition() - robot.arm.getReferencePosition());
         telemetry.addData("Reference Position", robot.arm.getReferencePosition());
         telemetry.addData("Target Position", robot.arm.getTargetPosition());
         telemetry.addData("Mode", robot.arm.getMode());

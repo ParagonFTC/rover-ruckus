@@ -18,8 +18,8 @@ public class ScoringArm extends Subsystem {
     private DcMotor joint, extension, intake;
     private Servo holder;
 
-    public static double LOCK_POSITION = 0.1;
-    public static double UNLOCK_POSITION = 0.45;
+    public static double LOCK_POSITION = 0.35;
+    public static double UNLOCK_POSITION = 0.0001;
 
     public static double JOINT_POWER = 0.7;
 
@@ -31,7 +31,7 @@ public class ScoringArm extends Subsystem {
     private boolean active = false;
 
     public static double JOINT_INIT_POSITION = 3 * Math.PI / 4;
-    public static double JOINT_DUMP_POSITION = 3 * Math.PI / 4;
+    public static double JOINT_DUMP_POSITION = 1.7;
     public static double JOINT_MID_POSITION = Math.PI / 2;
     public static double JOINT_CRATER_POSITION = 0.4;
     public static double JOINT_INTAKE_POSITION = 0;
@@ -45,10 +45,10 @@ public class ScoringArm extends Subsystem {
         RUN_TO_POSITION
     }
 
-    public static final int INIT = 4, DUMP = 3, MID = 2, CRATER = 1, INTAKE = 0, CUSTOM = 5;
+    public static final int INIT = 3, DUMP = 2, CRATER = 1, INTAKE = 0, CUSTOM = 4;
 
-    private int currentPosition = INTAKE;
-    private int nextPosition = INTAKE;
+    private int currentPosition = INIT;
+    private int nextPosition = INIT;
 
     class ArmState {
         private double jointPosition, extensionPosition, servoPosition;
@@ -74,7 +74,7 @@ public class ScoringArm extends Subsystem {
     ArmState[] armStates = {
             new ArmState(JOINT_INTAKE_POSITION, EXTENSION_CRATER_POSITION, UNLOCK_POSITION),
             new ArmState(JOINT_CRATER_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
-            new ArmState(JOINT_MID_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
+            //new ArmState(JOINT_MID_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
             new ArmState(JOINT_DUMP_POSITION, EXTENSION_DUMP_POSITION, LOCK_POSITION),
             new ArmState(JOINT_INIT_POSITION, EXTENSION_INIT_POSITION, LOCK_POSITION)
     };
@@ -118,7 +118,7 @@ public class ScoringArm extends Subsystem {
     }
 
     public void setIntakePower(double intakePower) {
-        if (currentPosition == INTAKE || currentPosition == DUMP) {
+        if (currentPosition == INTAKE || (currentPosition == DUMP && intakePower != 0)) {
             disableHold();
         }
         this.intakePower = intakePower;
@@ -175,6 +175,7 @@ public class ScoringArm extends Subsystem {
 
     public void setReferencePosition() {
         referencePosition = getArmPosition();
+        currentPosition = INTAKE;
     }
 
     public double getReferencePosition() {
@@ -199,7 +200,6 @@ public class ScoringArm extends Subsystem {
 
     @Override
     public void update() {
-
         if (mode == Mode.RUN_TO_POSITION) {
             if (!active) {
                 joint.setTargetPosition(targetPosition);
