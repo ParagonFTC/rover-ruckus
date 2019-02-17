@@ -20,6 +20,7 @@ public class TeleOp2 extends OpMode {
         robot = new FirstRobot(this);
         robot.start();
         robot.depot.raise();
+        robot.arm.setInitPosition(ScoringArm.DUMP);
 
         stickyGamepad1 = new StickyGamepad(gamepad1);
         stickyGamepad2 = new StickyGamepad(gamepad2);

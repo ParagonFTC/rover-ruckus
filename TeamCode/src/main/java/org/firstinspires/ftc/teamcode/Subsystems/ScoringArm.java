@@ -31,7 +31,7 @@ public class ScoringArm extends Subsystem {
     private boolean active = false;
 
     public static double JOINT_INIT_POSITION = 3 * Math.PI / 4;
-    public static double JOINT_DUMP_POSITION = 1.7;
+    public static double JOINT_DUMP_POSITION = 1.9;
     public static double JOINT_MID_POSITION = Math.PI / 2;
     public static double JOINT_CRATER_POSITION = 0.4;
     public static double JOINT_INTAKE_POSITION = 0;
@@ -96,9 +96,6 @@ public class ScoringArm extends Subsystem {
     }
 
     public void setJointPower(double jointPower) {
-        if (Math.abs(jointPower) > 0.1) {
-            mode = Mode.OPEN_LOOP;
-        }
         internalSetJointPower(jointPower);
     }
 
@@ -148,8 +145,6 @@ public class ScoringArm extends Subsystem {
         currentPosition = position;
         targetPosition = radiansToEncoderTicks(referencePosition - armStates[position].getJointPosition());
         extensionPosition = extensionInchestoTicks(armStates[position].getExtensionPosition());
-        //TODO: make update() method work
-        mode = Mode.RUN_TO_POSITION;
     }
 
     public void raiseArm() {
@@ -174,8 +169,18 @@ public class ScoringArm extends Subsystem {
     }
 
     public void setReferencePosition() {
-        referencePosition = getArmPosition();
-        currentPosition = INTAKE;
+        if (mode == Mode.OPEN_LOOP) {
+            referencePosition = getArmPosition();
+            currentPosition = INTAKE;
+            mode = Mode.RUN_TO_POSITION;
+        } else {
+            mode = Mode.OPEN_LOOP;
+        }
+    }
+
+    public void setInitPosition(int position) {
+        currentPosition = position;
+        referencePosition = armStates[position].getJointPosition();
     }
 
     public double getReferencePosition() {
