@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 @Config
 public class ScoringArm extends Subsystem {
     private static final double TICKS_PER_REV = 28 * 256;
-    private static final double PULLEY_RADIUS = 0.984252;
+    private static final double PULLEY_RADIUS = 0.6;
     private static final MotorConfigurationType EXTENSION_CONFIG = MotorConfigurationType.getMotorType(NeveRest20Gearmotor.class);
     private static final double EXTENSION_TICKS_PER_REV = EXTENSION_CONFIG.getTicksPerRev();
     private DcMotor joint, extension, intake;
@@ -141,6 +141,10 @@ public class ScoringArm extends Subsystem {
         return encoderTickstoRadians(joint.getCurrentPosition());
     }
 
+    public double getExtensionPosition() {
+        return extensionTickstoInches(extension.getCurrentPosition());
+    }
+
     public void setJointPosition(int position) {
         currentPosition = position;
         targetPosition = radiansToEncoderTicks(referencePosition - armStates[position].getJointPosition());
@@ -206,18 +210,19 @@ public class ScoringArm extends Subsystem {
     @Override
     public void update() {
         if (mode == Mode.RUN_TO_POSITION) {
-            if (!active) {
-                joint.setTargetPosition(targetPosition);
-                extension.setTargetPosition(extensionPosition);
-            } else if (!joint.isBusy()) {
-                active = false;
-                mode = Mode.OPEN_LOOP;
-            }
+            joint.setTargetPosition(targetPosition);
+            extension.setTargetPosition(extensionPosition);
+
             if (!(joint.getMode() == DcMotor.RunMode.RUN_TO_POSITION)) {
                 joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
+
+            if (joint.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+                joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+
             internalSetJointPower(JOINT_POWER);
-            //extensionPower = 0.7;
+            extensionPower = 1.0;
         } else if (!(joint.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)){
             joint.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
