@@ -72,7 +72,7 @@ public class ScoringArm extends Subsystem {
     }
 
     ArmState[] armStates = {
-            new ArmState(JOINT_INTAKE_POSITION, EXTENSION_CRATER_POSITION, UNLOCK_POSITION),
+            new ArmState(JOINT_INTAKE_POSITION, EXTENSION_DUMP_POSITION, UNLOCK_POSITION),
             new ArmState(JOINT_CRATER_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
             //new ArmState(JOINT_MID_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
             new ArmState(JOINT_DUMP_POSITION, EXTENSION_DUMP_POSITION, LOCK_POSITION),
@@ -89,6 +89,8 @@ public class ScoringArm extends Subsystem {
 
         extension = new CachingDcMotor(map.dcMotor.get("extension"));
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         intake = new CachingDcMotor(map.dcMotor.get("intake"));
 
@@ -175,7 +177,7 @@ public class ScoringArm extends Subsystem {
     public void setReferencePosition() {
         if (mode == Mode.OPEN_LOOP) {
             referencePosition = getArmPosition();
-            currentPosition = INTAKE;
+            setJointPosition(INTAKE);
             mode = Mode.RUN_TO_POSITION;
         } else {
             mode = Mode.OPEN_LOOP;
@@ -217,14 +219,15 @@ public class ScoringArm extends Subsystem {
                 joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
-            if (joint.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
-                joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if (extension.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+                extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
             internalSetJointPower(JOINT_POWER);
             extensionPower = 1.0;
-        } else if (!(joint.getMode() == DcMotor.RunMode.RUN_USING_ENCODER)){
+        } else {
             joint.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         joint.setPower(jointPower);
