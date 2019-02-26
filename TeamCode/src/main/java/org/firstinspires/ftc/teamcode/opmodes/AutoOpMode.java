@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
+import org.firstinspires.ftc.teamcode.Subsystems.ScoringArm;
 
 /**
  * Standard autonomous op mode with common functions
@@ -32,6 +33,8 @@ public abstract class AutoOpMode extends LinearOpMode {
     public final void runOpMode() throws InterruptedException {
         robot = new FirstRobot(this);
         robot.start();
+        robot.arm.setInitPosition(ScoringArm.INIT);
+        robot.arm.enableHold();
 
         detector = new GoldAlignDetector();
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
@@ -56,7 +59,8 @@ public abstract class AutoOpMode extends LinearOpMode {
 
     protected void land() {
         robot.latch.setWinchPower(-1);
-        //robot.arm.setJointPosition(Math.PI / 4);
+        robot.arm.setCustomJointPosition(3 * Math.PI / 4);
+        robot.arm.setMode(ScoringArm.Mode.RUN_TO_POSITION);
         robot.sleep(0.08);
         robot.arm.setExtensionPower(0);
         robot.latch.unlock();
@@ -116,7 +120,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.drive.setVelocity(new Pose2d(-1,0,0));
         robot.sleep(2.5);
         robot.drive.stop();
-        //robot.arm.setJointPosition(Math.PI / 2);
+        robot.arm.setCustomJointPosition(Math.PI / 2);
     }
 
     protected void claim() {

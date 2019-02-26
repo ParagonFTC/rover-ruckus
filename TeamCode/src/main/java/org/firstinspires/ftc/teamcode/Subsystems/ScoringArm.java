@@ -30,13 +30,13 @@ public class ScoringArm extends Subsystem {
     private int extensionPosition;
     private boolean active = false;
 
-    public static double JOINT_INIT_POSITION = 3 * Math.PI / 4;
-    public static double JOINT_DUMP_POSITION = 1.9;
+    public static double JOINT_INIT_POSITION = 2.77;
+    public static double JOINT_DUMP_POSITION = 2.1;
     public static double JOINT_MID_POSITION = Math.PI / 2;
     public static double JOINT_CRATER_POSITION = 0.4;
     public static double JOINT_INTAKE_POSITION = 0;
 
-    public static double EXTENSION_DUMP_POSITION = 30.0;
+    public static double EXTENSION_DUMP_POSITION = 26.0;
     public static double EXTENSION_CRATER_POSITION = 12.0;
     public static double EXTENSION_INIT_POSITION = 0.0;
 
@@ -45,7 +45,7 @@ public class ScoringArm extends Subsystem {
         RUN_TO_POSITION
     }
 
-    public static final int INIT = 3, DUMP = 2, CRATER = 1, INTAKE = 0, CUSTOM = 4;
+    public static final int INIT = 4, DUMP = 3, MID = 2, CRATER = 1, INTAKE = 0, CUSTOM = 5;
 
     private int currentPosition = INIT;
     private int nextPosition = INIT;
@@ -72,9 +72,9 @@ public class ScoringArm extends Subsystem {
     }
 
     ArmState[] armStates = {
-            new ArmState(JOINT_INTAKE_POSITION, EXTENSION_DUMP_POSITION, UNLOCK_POSITION),
+            new ArmState(JOINT_INTAKE_POSITION, EXTENSION_CRATER_POSITION, UNLOCK_POSITION),
             new ArmState(JOINT_CRATER_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
-            //new ArmState(JOINT_MID_POSITION, EXTENSION_CRATER_POSITION, LOCK_POSITION),
+            new ArmState(JOINT_MID_POSITION, 9.0, LOCK_POSITION),
             new ArmState(JOINT_DUMP_POSITION, EXTENSION_DUMP_POSITION, LOCK_POSITION),
             new ArmState(JOINT_INIT_POSITION, EXTENSION_INIT_POSITION, LOCK_POSITION)
     };
@@ -153,8 +153,16 @@ public class ScoringArm extends Subsystem {
         extensionPosition = extensionInchestoTicks(armStates[position].getExtensionPosition());
     }
 
+    public void setCustomJointPosition(double radians) {
+        currentPosition = CUSTOM;
+        targetPosition = radiansToEncoderTicks(referencePosition - radians);
+    }
+
     public void raiseArm() {
-        enableHold();
+        jointPower = 0.7;
+        if (currentPosition != INTAKE) {
+            enableHold();
+        }
         nextPosition = currentPosition + 1;
         if (nextPosition >= CUSTOM) {
             nextPosition = currentPosition;
@@ -165,6 +173,7 @@ public class ScoringArm extends Subsystem {
     }
 
     public void lowerArm() {
+        jointPower = 0.3;
         nextPosition = currentPosition - 1;
         if (nextPosition < INTAKE) {
             nextPosition = currentPosition;
@@ -205,6 +214,10 @@ public class ScoringArm extends Subsystem {
         return mode;
     }
 
+    public void setMode(Mode mode) {
+        this.mode = mode;
+    }
+
     public int getState() {
         return currentPosition;
     }
@@ -219,12 +232,14 @@ public class ScoringArm extends Subsystem {
                 joint.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
 
-            if (extension.getMode() != DcMotor.RunMode.RUN_TO_POSITION) {
+            if (currentPosition != INTAKE) {
                 extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                extensionPower = 1.0;
+            } else {
+                extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
 
             internalSetJointPower(JOINT_POWER);
-            extensionPower = 1.0;
         } else {
             joint.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
