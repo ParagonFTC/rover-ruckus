@@ -101,6 +101,9 @@ public class TeleOp2 extends OpMode {
         } else if (stickyGamepad2.y) {
             robot.arm.raiseArm();
         }
+        if (stickyGamepad2.b) {
+            robot.arm.resetExtenison();
+        }
         telemetry.addData("Arm Position", robot.arm.getArmPosition() - robot.arm.getReferencePosition());
         telemetry.addData("Extension Position", robot.arm.getExtensionPosition());
         telemetry.addData("Reference Position", robot.arm.getReferencePosition());

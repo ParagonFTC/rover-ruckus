@@ -89,7 +89,6 @@ public class ScoringArm extends Subsystem {
 
         extension = new CachingDcMotor(map.dcMotor.get("extension"));
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         intake = new CachingDcMotor(map.dcMotor.get("intake"));
@@ -114,6 +113,10 @@ public class ScoringArm extends Subsystem {
     }
     public void setExtensionPower(double extensionPower) {
         this.extensionPower = extensionPower;
+    }
+
+    public void resetExtenison() {
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
     public void setIntakePower(double intakePower) {

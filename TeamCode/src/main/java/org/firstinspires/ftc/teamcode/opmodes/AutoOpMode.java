@@ -35,6 +35,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.start();
         robot.arm.setInitPosition(ScoringArm.INIT);
         robot.arm.enableHold();
+        robot.arm.resetExtenison();
 
         detector = new GoldAlignDetector();
         detector.init(hardwareMap.appContext, CameraViewDisplay.getInstance());
@@ -120,7 +121,7 @@ public abstract class AutoOpMode extends LinearOpMode {
         robot.drive.setVelocity(new Pose2d(-1,0,0));
         robot.sleep(2.5);
         robot.drive.stop();
-        robot.arm.setCustomJointPosition(Math.PI / 2);
+        robot.arm.setJointPosition(ScoringArm.CRATER);
     }
 
     protected void claim() {
