@@ -52,7 +52,6 @@ public abstract class AutoOpMode extends LinearOpMode {
         waitForStart();
         robot.drive.setHeading(0);
         run();
-
         while (!isStopRequested()) {
             idle();
         }
@@ -109,8 +108,10 @@ public abstract class AutoOpMode extends LinearOpMode {
     }
 
     protected void driveToSample() {
+        robot.latch.setWinchPower(-1);
         robot.drive.setVelocity(new Pose2d(0.5,0,0));
         robot.sleep(1.15);
+        robot.latch.setWinchPower(0);
         robot.drive.setVelocity(new Pose2d(0,-0.5,0));
         robot.sleep(1.45);
         robot.drive.stop();
@@ -119,7 +120,7 @@ public abstract class AutoOpMode extends LinearOpMode {
     protected void park() {
         robot.drive.disableHeadingCorrection();
         robot.drive.setVelocity(new Pose2d(-1,0,0));
-        robot.sleep(2.5);
+        robot.sleep(2.3);
         robot.drive.stop();
         robot.arm.setJointPosition(ScoringArm.CRATER);
     }

@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
 import com.paragonftc.ftc.vision.TFGoldAlign;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+@Disabled
 @TeleOp
 public class TFAlignTest extends OpMode {
     private TFGoldAlign detector;

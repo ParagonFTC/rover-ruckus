@@ -42,6 +42,7 @@ public class GoldAlignDetector extends DogeCVDetector {
     public boolean debugAlignment = true; // Show debug lines to show alignment settings
     public double alignPosOffset  = 0;    // How far from center frame is aligned
     public double alignSize       = 100;  // How wide is the margin of error for alignment
+    public double minArea         = 500;
 
     public DogeCV.AreaScoringMethod areaScoringMethod = DogeCV.AreaScoringMethod.MAX_AREA; // Setting to decide to use MaxAreaScorer or PerfectAreaScorer
 
@@ -106,7 +107,7 @@ public class GoldAlignDetector extends DogeCVDetector {
         double alignXMax = alignX +(alignSize / 2); // Max X pos in pixels
         double xPos; // Current Gold X Pos
 
-        if(bestRect != null){
+        if(bestRect != null && (bestRect.width * bestRect.height > minArea)){
             // Show chosen result
             Imgproc.rectangle(displayMat, bestRect.tl(), bestRect.br(), new Scalar(255,0,0),4);
             Imgproc.putText(displayMat, "Chosen", bestRect.tl(),0,1,new Scalar(255,255,255));

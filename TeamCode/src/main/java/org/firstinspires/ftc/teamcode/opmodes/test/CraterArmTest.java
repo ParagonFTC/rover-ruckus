@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmodes.test;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Subsystems.FirstRobot;
 
+@Disabled
 @TeleOp
 public class CraterArmTest extends OpMode {
     FirstRobot robot;

@@ -31,13 +31,13 @@ public class ScoringArm extends Subsystem {
     private boolean active = false;
 
     public static double JOINT_INIT_POSITION = 2.77;
-    public static double JOINT_DUMP_POSITION = 2.1;
+    public static double JOINT_DUMP_POSITION = 1.9;
     public static double JOINT_MID_POSITION = Math.PI / 2;
     public static double JOINT_CRATER_POSITION = 0.4;
     public static double JOINT_INTAKE_POSITION = 0;
 
-    public static double EXTENSION_DUMP_POSITION = 26.0;
-    public static double EXTENSION_CRATER_POSITION = 12.0;
+    public static double EXTENSION_DUMP_POSITION = 27.0;
+    public static double EXTENSION_CRATER_POSITION = 11.0;
     public static double EXTENSION_INIT_POSITION = 0.0;
 
     public enum Mode {
@@ -162,16 +162,20 @@ public class ScoringArm extends Subsystem {
     }
 
     public void raiseArm() {
-        jointPower = 0.7;
         if (currentPosition != INTAKE) {
             enableHold();
         }
         nextPosition = currentPosition + 1;
-        if (nextPosition >= CUSTOM) {
+        if (nextPosition >= INIT) {
             nextPosition = currentPosition;
         } else {
             setJointPosition(nextPosition);
             currentPosition = nextPosition;
+        }
+        if (currentPosition == DUMP) {
+            jointPower = 0.35;
+        } else {
+            jointPower = 0.7;
         }
     }
 
@@ -188,10 +192,19 @@ public class ScoringArm extends Subsystem {
 
     public void setReferencePosition() {
         if (mode == Mode.OPEN_LOOP) {
-            referencePosition = getArmPosition();
-            setJointPosition(INTAKE);
-            mode = Mode.RUN_TO_POSITION;
+            if (currentPosition == CUSTOM) {
+                resetExtenison();
+                currentPosition = MID;
+            }
+            else{
+                referencePosition = getArmPosition();
+                setJointPosition(INTAKE);
+                mode = Mode.RUN_TO_POSITION;
+            }
         } else {
+            if (currentPosition == DUMP) {
+                currentPosition = CUSTOM;
+            }
             mode = Mode.OPEN_LOOP;
         }
     }
